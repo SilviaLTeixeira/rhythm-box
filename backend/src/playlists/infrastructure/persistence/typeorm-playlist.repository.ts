@@ -1,20 +1,41 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { Playlist } from '../../domain/entities/playlist.entity';
 import { CreatePlaylistDto } from '../../interfaces/dtos/create-playlist.dto';
 import { UpdatePlaylistDto } from '../../interfaces/dtos/update-playlist.dto';
+import { Users } from '../../../users/domain/entities/users.entity';
+import { Tracks } from '../../../tracks/domain/entities/tracks.entity';
 
 @Injectable()
 export class TypeOrmPlaylistRepository {
   constructor(
     @InjectRepository(Playlist)
     private readonly repo: Repository<Playlist>,
+
+    @InjectRepository(Users)
+    private readonly userRepo: Repository<Users>,
+
+    @InjectRepository(Tracks)
+    private readonly trackRepo: Repository<Tracks>,
   ) {}
 
   async create(dto: CreatePlaylistDto) {
-    const playlist = this.repo.create(dto);
+    const user = await this.userRepo.findOneBy({ id: dto.createdById });
+    if (!user) throw new NotFoundException(`Usuário ${dto.createdById} não encontrado`);
+
+    const tracks = await this.trackRepo.findBy({ id: In(dto.trackIds) });
+    if (tracks.length !== dto.trackIds.length) {
+      throw new NotFoundException('Uma ou mais tracks não foram encontradas');
+    }
+
+    const playlist = this.repo.create({
+      name: dto.name,
+      createdBy: user,
+      tracks: tracks,
+    });
+
     return this.repo.save(playlist);
   }
 
@@ -30,9 +51,28 @@ export class TypeOrmPlaylistRepository {
 
   async update(id: number, dto: UpdatePlaylistDto) {
     const playlist = await this.findOne(id);
-    const merged = this.repo.merge(playlist, dto);
-    return this.repo.save(merged);
+
+    if (dto.name) {
+      playlist.name = dto.name;
+    }
+
+    if (dto.createdById) {
+      const user = await this.userRepo.findOneBy({ id: dto.createdById });
+      if (!user) throw new NotFoundException(`Usuário ${dto.createdById} não encontrado`);
+      playlist.createdBy = user;
+    }
+
+    if (dto.trackIds) {
+      const tracks = await this.trackRepo.findBy({ id: In(dto.trackIds) });
+      if (tracks.length !== dto.trackIds.length) {
+        throw new NotFoundException('Uma ou mais tracks não foram encontradas');
+      }
+      playlist.tracks = tracks;
+    }
+
+    return this.repo.save(playlist);
   }
+
 
   async delete(id: number) {
     const { affected } = await this.repo.delete(id);

@@ -1,6 +1,18 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
+  Unique,
+} from 'typeorm';
+import { Users } from '../../../users/domain/entities/users.entity';
+import { Tracks } from '../../../tracks/domain/entities/tracks.entity';
 
 @Entity('playlists')
+@Unique(['name']) 
 export class Playlist {
   @PrimaryGeneratedColumn()
   id: number;
@@ -8,12 +20,18 @@ export class Playlist {
   @Column()
   name: string;
 
-  @Column('simple-array') 
-  tracks: string[];
+  
+  @ManyToOne(() => Users, (user) => user.playlists, { eager: true })
+  createdBy: Users;
 
-  @Column()
-  createdBy: string;
+  @ManyToMany(() => Tracks, { eager: true })
+  @JoinTable({
+    name: 'playlist_tracks',
+    joinColumn: { name: 'playlist_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'track_id', referencedColumnName: 'id' },
+  })
+  tracks: Tracks[];
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   createdAt: Date;
 }

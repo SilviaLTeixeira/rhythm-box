@@ -11,10 +11,12 @@ import { UpdatePlaylistUseCase } from './application/use-cases/update-playlist.u
 import { DeletePlaylistUseCase } from './application/use-cases/delete-playlist.use-case';
 
 import { PlaylistsController } from './interfaces/controllers/playlists.controller';
+import { Users } from '../users/domain/entities/users.entity';
+import { Tracks } from '../tracks/domain/entities/tracks.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Playlist]),
+    TypeOrmModule.forFeature([Playlist, Users, Tracks]),
   ],
   controllers: [PlaylistsController],
   providers: [
