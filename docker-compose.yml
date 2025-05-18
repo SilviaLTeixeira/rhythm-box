@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: ./backend
+    container_name: rhythm-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=silvia
+      - DB_NAME=rhythm_db
+    networks:
+      - rhythm-net
+
+  db:
+    image: postgres:15
+    container_name: rhythm-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: silvia
+      POSTGRES_DB: rhythm_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - rhythm-net
+
+volumes:
+  pgdata:
+
+networks:
+  rhythm-net:
