@@ -49,20 +49,20 @@ export class TypeOrmPlaylistRepository {
     return playlist;
   }
 
-  async update(id: number, dto: UpdatePlaylistDto) {
+
+
+  async update(id: number, dto: UpdatePlaylistDto): Promise<Playlist> {
+
     const playlist = await this.findOne(id);
 
-    if (dto.name) {
-      playlist.name = dto.name;
-    }
-
-    if (dto.createdById) {
+    if (dto.createdById !== undefined) {
       const user = await this.userRepo.findOneBy({ id: dto.createdById });
       if (!user) throw new NotFoundException(`Usuário ${dto.createdById} não encontrado`);
       playlist.createdBy = user;
     }
 
-    if (dto.trackIds) {
+  
+    if (dto.trackIds !== undefined) {
       const tracks = await this.trackRepo.findBy({ id: In(dto.trackIds) });
       if (tracks.length !== dto.trackIds.length) {
         throw new NotFoundException('Uma ou mais tracks não foram encontradas');
@@ -70,8 +70,15 @@ export class TypeOrmPlaylistRepository {
       playlist.tracks = tracks;
     }
 
-    return this.repo.save(playlist);
+    this.repo.merge(playlist, dto);
+
+  
+    await this.repo.save(playlist);
+
+  
+    return this.findOne(id);
   }
+
 
 
   async delete(id: number) {

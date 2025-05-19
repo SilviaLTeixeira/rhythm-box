@@ -15,7 +15,8 @@ export class TypeOrmUsersRepository {
 
   async create(dto: CreateUserDto) {
     const user = this.repo.create(dto);
-    return this.repo.save(user);
+    const saved = await this.repo.save(user);
+    return saved;
   }
 
   async findAll() {
