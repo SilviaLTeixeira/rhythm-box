@@ -1,3 +1,4 @@
+
 Rhythm Box
 
 Plataforma de streaming de música com gerenciamento de playlists, usuários e consumo de API externa (Vagalume).
