@@ -1,0 +1,1 @@
+export { ArtistSearchPage } from './ArtistSearchPage';
