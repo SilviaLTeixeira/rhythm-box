@@ -6,16 +6,21 @@ services:
       context: ./backend
     container_name: rhythm-api
     restart: unless-stopped
+
     ports:
       - "3000:3000"
+
     depends_on:
       - db
+
     environment:
-      - DB_HOST=db
+      - DB_HOST=localhost
       - DB_PORT=5432
       - DB_USERNAME=postgres
       - DB_PASSWORD=silvia
       - DB_NAME=rhythm_db
+      - PORT=3000
+
     networks:
       - rhythm-net
 
@@ -28,7 +33,7 @@ services:
       POSTGRES_PASSWORD: silvia
       POSTGRES_DB: rhythm_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:

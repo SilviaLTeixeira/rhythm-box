@@ -9,6 +9,7 @@
     "paths": {
       "src/*": ["./*"]                       
     },
+    "types": ["jest"],
     "declaration": false,
     "removeComments": true,
     "emitDecoratorMetadata": true,
